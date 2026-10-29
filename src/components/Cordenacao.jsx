@@ -6,7 +6,8 @@ const DIA = 864e5;
 const LIMITE_LOG = 30 * DIA; // registros guardados por 30 dias
 const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const DISCIPLINAS = ["Português", "Matemática", "Ciências", "História", "Geografia", "Inglês", "Artes", "Ed. Física", "Livre"];
-const PERFIS = ["Coordenação", "Professor", "Aluno", "Aluno restrito"];
+const PERFIS = ["Coordenação", "Professor", "Aluno"];
+
 const PERMISSOES = [
   ["Anos, turmas e usuários", "Sim", "Não", "Não", "Não"],
   ["Aprovar ou recusar solicitações", "Sim", "Não", "Não", "Não"],

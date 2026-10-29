@@ -1,0 +1,929 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ==============================
+   CONFIGURAÇÕES GERAIS
+============================== */
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --sidebar: #111c35;
+  --background: #f4f7fb;
+  --white: #ffffff;
+  --dark: #0f172a;
+  --text: #334155;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --radius: 14px;
+  --shadow: 0 4px 20px rgba(15,23,42,.04);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background: var(--background);
+  color: var(--text);
+}
+
+button, input, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* ==============================
+   ESTRUTURA PRINCIPAL
+============================== */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ==============================
+   MENU LATERAL
+============================== */
+
+.app aside {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  background: var(--sidebar);
+  color: white;
+  padding: 30px 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.app aside .brand {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  color: white;
+  padding: 5px 12px;
+  margin-bottom: 6px;
+}
+
+/* Evita herdar o ícone decorativo do login */
+
+.app aside .brand::before {
+  display: none;
+}
+
+.app aside .sub {
+  font-size: 12px;
+  color: #94a3b8;
+  padding: 0 12px;
+  margin-bottom: 42px;
+}
+
+/* NAVEGAÇÃO */
+
+.app nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app nav button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  color: #aebdd1;
+  padding: 14px 15px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  transition: .2s;
+}
+
+.app nav button:hover {
+  background: rgba(255,255,255,.07);
+  color: white;
+}
+
+.app nav button.on {
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 5px 15px rgba(37,99,235,.2);
+}
+
+/* CONTADOR */
+
+.app .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* USUÁRIO */
+
+.app .usuario {
+  margin-top: auto;
+  padding: 20px 12px 0;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.app .usuario span {
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.app .usuario button {
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: #cbd5e1;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.app .usuario button:hover {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+/* ==============================
+   CONTEÚDO PRINCIPAL
+============================== */
+
+.app > main {
+  flex: 1;
+  min-width: 0;
+  max-width: 1600px;
+  padding: 40px 5%;
+  margin: 0 auto;
+}
+
+.app main > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.app header h1 {
+  font-size: 29px;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: -1px;
+  margin: 0 0 8px;
+}
+
+.app .help {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.app .meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ==============================
+   CARDS
+============================== */
+
+.app .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.app .card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 25px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  min-width: 0;
+  animation: aparecer .3s ease;
+}
+
+.app .grid .card {
+  margin-bottom: 0;
+}
+
+.app .card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 23px;
+  letter-spacing: -.3px;
+}
+
+.app .stat {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -2px;
+  margin: 10px 0;
+}
+
+/* ==============================
+   BOTÕES
+============================== */
+
+.app .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s ease;
+}
+
+.app .btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.app .btn.sec {
+  background: #eff6ff;
+  color: var(--primary);
+  border-color: #dbeafe;
+}
+
+.app .btn.sec:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.app .btn.del {
+  background: #fff1f2;
+  color: var(--danger);
+  border-color: #fecdd3;
+}
+
+.app .btn.del:hover {
+  background: #ffe4e6;
+}
+
+.app .btn.mini {
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+.app .btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* ==============================
+   LISTA DE AULAS
+============================== */
+
+.app .lista {
+  list-style: none;
+  margin: 0 0 25px;
+  padding: 0;
+}
+
+.app .lista li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.app .lista li:last-child {
+  border-bottom: none;
+}
+
+.app .lista time {
+  color: var(--primary);
+  font-weight: 700;
+  min-width: 45px;
+  font-size: 12px;
+}
+
+/* REUNIÕES */
+
+.app .item {
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.app .item b {
+  display: block;
+  color: var(--dark);
+  margin-bottom: 7px;
+}
+
+/* ==============================
+   ETAPAS DO CADASTRO
+============================== */
+
+.app .passos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 25px;
+  counter-reset: etapa;
+}
+
+.app .passos li {
+  counter-increment: etapa;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.app .passos li::before {
+  content: counter(etapa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* ==============================
+   FORMULÁRIO DE AULAS
+============================== */
+
+.app .row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.app form.card > .row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.app form.card label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dark);
+  min-width: 0;
+}
+
+.app form.card select {
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 8px;
+  padding: 0 13px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: .2s;
+}
+
+.app form.card select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.1);
+}
+
+.app form.card .btn {
+  grid-column: 1 / -1;
+  min-height: 46px;
+  margin-top: 5px;
+}
+
+.app form.card > p {
+  margin-top: 18px;
+}
+
+/* ALERTAS */
+
+.app .warn {
+  color: var(--warning);
+  background: #fffbeb;
+  padding: 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  border: 1px solid #fde68a;
+}
+
+.app .err {
+  color: var(--danger);
+  font-size: 12px;
+  min-height: 15px;
+}
+
+/* ==============================
+   SOLICITAÇÕES E FILTROS
+============================== */
+
+.app .tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.app .tabs button {
+  background: white;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 10px 17px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.app .tabs button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.app .tabs button.on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.app .req {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.app .req > div:first-child {
+  min-width: 0;
+}
+
+.app .req b {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--dark);
+  margin-bottom: 9px;
+}
+
+.app .req .row {
+  justify-content: flex-end;
+}
+
+/* STATUS */
+
+.app .tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  color: #b45309;
+  padding: 6px 11px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app .tag.ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.app .tag.bad {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.app .empty {
+  padding: 50px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ==============================
+   GRADE DE HORÁRIOS
+============================== */
+
+.app .scroll {
+  overflow-x: auto;
+}
+
+.app .grade {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.app .grade th,
+.app .grade td {
+  padding: 18px 15px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.app .grade thead th {
+  background: #f8fafc;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.app .grade tbody th {
+  color: var(--dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app .grade td {
+  font-weight: 500;
+}
+
+.app .grade td b {
+  color: var(--dark);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.app .grade tbody tr:hover {
+  background: #f8fafc;
+}
+
+.app .grade .hoje-col {
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.app .livre {
+  color: #cbd5e1;
+}
+
+/* ==============================
+   NOTIFICAÇÕES
+============================== */
+
+.app .bar {
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.app .log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.app .log li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  border-radius: 7px;
+}
+
+.app .log li:last-child {
+  border-bottom: none;
+}
+
+.app .log li.nova {
+  background: #eff6ff;
+  border-left: 3px solid var(--primary);
+}
+
+.app .log time {
+  min-width: 75px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.app .log span {
+  flex: 1;
+  line-height: 1.6;
+}
+
+.app .log .nova span {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* ==============================
+   MODAL DE CONFIRMAÇÃO
+============================== */
+
+.app .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.65);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: aparecer .2s ease;
+}
+
+.app .modal .card {
+  width: 100%;
+  max-width: 440px;
+  padding: 30px;
+  margin: 0;
+  box-shadow: 0 25px 70px rgba(0,0,0,.2);
+}
+
+.app .modal p {
+  font-size: 15px;
+  color: var(--dark);
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 0 0 25px;
+}
+
+.app .fim {
+  justify-content: flex-end;
+}
+
+/* ==============================
+   TOAST - MENSAGEM FLUTUANTE
+============================== */
+
+.app .toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 200;
+  background: var(--dark);
+  color: white;
+  padding: 15px 22px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: .3s ease;
+  pointer-events: none;
+  max-width: min(400px, calc(100vw - 40px));
+}
+
+.app .toast.on {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ==============================
+   ANIMAÇÕES
+============================== */
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==============================
+   RESPONSIVIDADE - TABLET
+============================== */
+
+@media (max-width: 1050px) {
+
+  .app aside {
+    width: 215px;
+    min-width: 215px;
+  }
+
+  .app > main {
+    padding: 30px;
+  }
+
+  .app .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app .req {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app .req .row {
+    justify-content: flex-start;
+  }
+}
+
+/* ==============================
+   RESPONSIVIDADE - CELULAR
+============================== */
+
+@media (max-width: 700px) {
+
+  .app {
+    flex-direction: column;
+  }
+
+  .app aside {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    position: relative;
+    padding: 18px 15px;
+  }
+
+  .app aside .brand {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .app aside .sub {
+    margin-bottom: 20px;
+  }
+
+  .app nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .app nav button {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 11px 14px;
+  }
+
+  .app .usuario {
+    margin-top: 12px;
+    padding-top: 15px;
+  }
+
+  .app > main {
+    padding: 25px 16px;
+    width: 100%;
+  }
+
+  .app main > header {
+    margin-bottom: 25px;
+  }
+
+  .app header h1 {
+    font-size: 24px;
+  }
+
+  .app .card {
+    padding: 18px;
+  }
+
+  .app .grid {
+    gap: 14px;
+  }
+
+  .app .passos {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .app .passos li {
+    padding: 12px;
+  }
+
+  .app form.card > .row {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .app .req {
+    gap: 15px;
+  }
+
+  .app .req .row {
+    gap: 8px;
+  }
+
+  .app .log li {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .app .log span {
+    flex-basis: calc(100% - 90px);
+  }
+
+  .app .log .btn {
+    margin-left: auto;
+  }
+
+  .app .modal .card {
+    padding: 22px;
+  }
+
+  .app .toast {
+    bottom: 15px;
+    right: 15px;
+    left: 15px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 380px) {
+
+  .app .card {
+    padding: 14px;
+  }
+
+  .app .tabs button {
+    padding: 9px 12px;
+    font-size: 11px;
+  }
+
+  .app .req .row {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .app .req .row .btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app *,
+  .app *::before,
+  .app *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

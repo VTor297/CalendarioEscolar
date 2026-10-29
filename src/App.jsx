@@ -1,18 +1,24 @@
-import { useState } from 'react'
-import './App.css'
-import CoordenacaoApp from "./pages/Cordenacao"
+import { useState } from "react";
+import Login from "./components/Login.jsx"
+import CoordenacaoApp from "./components/Cordenacao.jsx";
+import ProfessorApp from "./components/Professor.jsx";
+import AlunoApp from "./components/Aluno.jsx";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [usuario, setUsuario] = useState(null);
+  const sair = () => setUsuario(null);
 
-  return (
-    <div>
+  if (!usuario) return <Login onEntrar={setUsuario} />;
 
-  <CoordenacaoApp />
-      
+  if (usuario.perfil === "Coordenação") {
+    return <CoordenacaoApp usuario={usuario} onSair={sair} />;
+  }
 
-    </div>
-  )
+  if(usuario.perfil === "Professor") {
+    return <ProfessorApp usuario={usuario} onSair={sair} />;
+  }
+
+  if(usuario.perfil === "Aluno") {
+    return <AlunoApp usuario={usuario} onSair={sair} />;
+  }
 }
-
-export default App

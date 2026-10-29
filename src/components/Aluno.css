@@ -1,0 +1,836 @@
+
+/* =====================================
+   CALENDÁRIO ESCOLAR - PAINEL DO ALUNO
+===================================== */
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --dark: #0f172a;
+  --sidebar: #111c35;
+  --background: #f4f7fb;
+  --white: #ffffff;
+  --text: #334155;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --shadow: 0 4px 20px rgba(15, 23, 42, .04);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  font-family: 'Inter', Arial, sans-serif;
+  color: var(--text);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* =====================================
+   ESTRUTURA PRINCIPAL
+===================================== */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* =====================================
+   MENU LATERAL
+===================================== */
+
+.app aside {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  background: var(--sidebar);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 16px;
+  z-index: 10;
+}
+
+.app aside .brand {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  padding: 5px 12px;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.app aside .brand::before {
+  display: none;
+}
+
+.app aside .sub {
+  font-size: 12px;
+  color: #94a3b8;
+  padding: 0 12px;
+  margin-bottom: 42px;
+}
+
+/* NAVEGAÇÃO */
+
+.app nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app nav button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #aebdd1;
+  padding: 14px 15px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  transition: .2s;
+}
+
+.app nav button:hover {
+  background: rgba(255,255,255,.07);
+  color: white;
+}
+
+.app nav button.on {
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 5px 15px rgba(37,99,235,.2);
+}
+
+/* CONTADOR DE NOTIFICAÇÕES */
+
+.app .badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 20px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* USUÁRIO */
+
+.app .usuario {
+  margin-top: auto;
+  padding: 20px 12px 0;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.app .usuario span {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  overflow-wrap: anywhere;
+}
+
+.app .usuario button {
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: #cbd5e1;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.app .usuario button:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+/* =====================================
+   CONTEÚDO PRINCIPAL
+===================================== */
+
+.app > main {
+  flex: 1;
+  min-width: 0;
+  max-width: 1600px;
+  padding: 40px 5%;
+  margin: 0 auto;
+}
+
+/* CABEÇALHO */
+
+.app main > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.app header h1 {
+  font-size: 29px;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: -1px;
+  margin: 0 0 8px;
+}
+
+.app .help {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.app .meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =====================================
+   CARDS E GRID
+===================================== */
+
+.app .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.app .card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 25px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  min-width: 0;
+  animation: aparecer .3s ease;
+}
+
+.app .grid .card {
+  margin-bottom: 0;
+}
+
+.app .card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 23px;
+  letter-spacing: -.3px;
+}
+
+.app .stat {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -2px;
+  margin: 10px 0;
+}
+
+/* =====================================
+   LISTA DE AULAS
+===================================== */
+
+.app .lista {
+  list-style: none;
+  margin: 0 0 25px;
+  padding: 0;
+}
+
+.app .lista li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.app .lista li:last-child {
+  border-bottom: none;
+}
+
+.app .lista time {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 12px;
+  min-width: 45px;
+}
+
+/* COMPROMISSOS */
+
+.app .item {
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.app .item:last-of-type {
+  border-bottom: none;
+}
+
+.app .item b {
+  color: var(--dark);
+  display: inline-block;
+  margin-right: 7px;
+  margin-bottom: 7px;
+}
+
+/* =====================================
+   BOTÕES
+===================================== */
+
+.app .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s ease;
+}
+
+.app .btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.app .btn.sec {
+  background: #eff6ff;
+  color: var(--primary);
+  border-color: #dbeafe;
+}
+
+.app .btn.sec:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.app .btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.app .btn.mini {
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+/* =====================================
+   TAGS E INDICADORES
+===================================== */
+
+.app .tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 11px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app .tag.tipo.prova,
+.app .ponto.prova {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.app .tag.tipo.trabalho,
+.app .ponto.trabalho {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.app .tag.tipo.reuniao,
+.app .ponto.reuniao {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.app .tag.tipo.prazo,
+.app .ponto.prazo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.app .tag.bad {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* =====================================
+   CALENDÁRIO
+===================================== */
+
+.app .cal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.app .cal-topo h2 {
+  margin: 0;
+}
+
+.app .cal-mes {
+  text-transform: capitalize;
+  font-size: 18px !important;
+}
+
+.app .cal-topo button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 22px;
+}
+
+.app .cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.app .cal-cab {
+  text-align: center;
+  padding: 12px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.app .cal-dia {
+  position: relative;
+  min-width: 0;
+  min-height: 75px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.app .cal-dia:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.app .cal-dia.hoje {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #eff6ff;
+}
+
+.app .cal-dia.sel {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(37,99,235,.2);
+}
+
+/* PONTOS DOS EVENTOS */
+
+.app .pontos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.app .ponto {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.app .ponto.prova {
+  background: #ef4444;
+}
+
+.app .ponto.trabalho {
+  background: #f59e0b;
+}
+
+.app .ponto.reuniao {
+  background: #8b5cf6;
+}
+
+.app .ponto.prazo {
+  background: #22c55e;
+}
+
+/* =====================================
+   GRADE DE HORÁRIOS
+===================================== */
+
+.app .scroll {
+  overflow-x: auto;
+}
+
+.app .grade {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.app .grade th,
+.app .grade td {
+  padding: 18px 15px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.app .grade thead th {
+  color: var(--muted);
+  font-weight: 700;
+  background: #f8fafc;
+}
+
+.app .grade tbody th {
+  color: var(--dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app .grade td {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.app .grade tbody tr:hover {
+  background: #f8fafc;
+}
+
+.app .grade .hoje-col {
+  background: #eff6ff;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* =====================================
+   FILTROS - PROVAS E PRAZOS
+===================================== */
+
+.app .tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.app .tabs button {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--muted);
+  padding: 10px 17px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.app .tabs button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.app .tabs button.on {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* PROVAS E REUNIÕES */
+
+.app .req {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.app .req b {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--dark);
+  margin-bottom: 9px;
+}
+
+.app .empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =====================================
+   NOTIFICAÇÕES
+===================================== */
+
+.app .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app .bar {
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.app .log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app .log li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  border-radius: 7px;
+}
+
+.app .log li:last-child {
+  border-bottom: none;
+}
+
+.app .log li.nova {
+  background: #eff6ff;
+  border-left: 3px solid var(--primary);
+}
+
+.app .log time {
+  min-width: 75px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.app .log span {
+  flex: 1;
+  line-height: 1.6;
+}
+
+.app .log .nova span {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* =====================================
+   ANIMAÇÕES
+===================================== */
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =====================================
+   RESPONSIVIDADE - TABLETS
+===================================== */
+
+@media (max-width: 1050px) {
+  .app aside {
+    width: 215px;
+    min-width: 215px;
+  }
+
+  .app > main {
+    padding: 30px;
+  }
+
+  .app .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================
+   RESPONSIVIDADE - CELULARES
+===================================== */
+
+@media (max-width: 700px) {
+
+  .app {
+    flex-direction: column;
+  }
+
+  .app aside {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    position: relative;
+    padding: 18px 15px;
+  }
+
+  .app aside .brand {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .app aside .sub {
+    margin-bottom: 20px;
+  }
+
+  .app nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .app nav button {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 11px 14px;
+  }
+
+  .app .usuario {
+    margin-top: 12px;
+    padding-top: 15px;
+  }
+
+  .app > main {
+    padding: 25px 16px;
+    width: 100%;
+  }
+
+  .app main > header {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 25px;
+  }
+
+  .app header h1 {
+    font-size: 24px;
+  }
+
+  .app .card {
+    padding: 18px;
+  }
+
+  .app .grid {
+    gap: 14px;
+  }
+
+  .app .cal {
+    gap: 4px;
+  }
+
+  .app .cal-dia {
+    min-height: 53px;
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .app .cal-cab {
+    font-size: 10px;
+  }
+
+  .app .ponto {
+    width: 5px;
+    height: 5px;
+  }
+
+  .app .req {
+    align-items: flex-start;
+  }
+
+  .app .log li {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .app .log span {
+    flex-basis: calc(100% - 90px);
+  }
+
+  .app .log .btn {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .app .cal-dia {
+    min-height: 45px;
+    padding: 4px;
+  }
+
+  .app .cal {
+    gap: 3px;
+  }
+
+  .app .cal-mes {
+    font-size: 15px !important;
+  }
+
+  .app .card {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app *,
+  .app *::before,
+  .app *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
