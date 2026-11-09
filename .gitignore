@@ -1,0 +1,21 @@
+# Dependências
+node_modules/
+front/node_modules/
+
+# Builds e cache
+front/dist/
+front/.vite/
+*.log
+database/
+
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Editor e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

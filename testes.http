@@ -1,0 +1,29 @@
+### Listar usuários
+GET http://localhost:3000/listar
+
+
+
+### Cadastrar usuário
+POST http://localhost:3000/cadastrar
+Content-Type: application/json
+
+{
+    "nome": "Maria Silva",
+    "email": "maria@email.com",
+    "senha": "123456",
+    "tipo": "professor"
+}
+
+### Buscar usuário
+GET http://localhost:3000/usuario/buscar/1
+
+### Editar usuário
+PUT http://localhost:3000/users/editar/1
+Content-Type: application/json
+
+{
+    "nome": "João Atualizado"
+}
+
+### Excluir usuário
+DELETE http://localhost:3000/usuario/delete/1
