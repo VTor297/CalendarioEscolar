@@ -1,11 +1,31 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import "./Coordenacao.css";
+import {
+  listarEventos,
+  listarHorarios,
+  cadastrarHorario,
+  listarSolicitacoesPendentes,
+  aprovarSolicitacao,
+  recusarSolicitacao,
+  listarTrocasPendentes,
+  aprovarTroca,
+  recusarTroca,
+  listarUsuarios,
+  cadastrarUsuario,
+} from "../services/api";
 
-/* ---------- constantes e dados de exemplo ---------- */
+/* =========================================================
+   CONSTANTES E UTILITÁRIOS
+========================================================= */
+
 const DIA = 864e5;
-const LIMITE_LOG = 30 * DIA; // registros guardados por 30 dias
+const LIMITE_LOG = 30 * DIA;
 const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex"];
-const DISCIPLINAS = ["Português", "Matemática", "Ciências", "História", "Geografia", "Inglês", "Artes", "Ed. Física", "Livre"];
+const DISCIPLINAS = [
+  "Português", "Matemática", "Ciências", "História", "Geografia",
+  "Inglês", "Artes", "Ed. Física", "Livre",
+];
+const HORARIOS_BASE = ["07:30", "08:20", "09:10", "10:20", "11:10"];
 const PERFIS = ["Coordenação", "Professor", "Aluno"];
 
 const PERMISSOES = [
@@ -16,84 +36,123 @@ const PERMISSOES = [
   ["Reuniões", "Cria e edita", "Só ver", "Só ver", "Só ver"],
   ["Calendário e horários", "Sim", "Só ver (o seu)", "Só ver", "Não"],
 ];
+
 const TELAS = [
   ["home", "Início", "Um resumo do que precisa da sua atenção."],
-  ["apr", "Aprovações", "Tudo o que os professores cadastram passa por aqui antes de ser publicado."],
-  ["hor", "Horários e aulas", "Edite a grade de cada turma. Alterações da coordenação são publicadas direto."],
+  ["apr", "Aprovações", "Tudo o que os professores cadastram passa por aqui."],
+  ["troc", "Trocas de aula", "Aprovações de trocas entre professores."],
+  ["hor", "Horários e aulas", "Edite a grade de cada turma."],
   ["ev", "Eventos e reuniões", "Publique provas, trabalhos, prazos e reuniões."],
-  ["anos", "Anos e turmas", "Planeje os próximos anos letivos e organize turmas e turnos."],
+  ["anos", "Anos e turmas", "Planeje os próximos anos letivos e organize turmas."],
   ["usr", "Usuários e perfis", "Defina quem acessa o sistema e o que cada perfil pode fazer."],
   ["log", "Registro de atividades", "Quem fez o quê. Os registros são guardados por 30 dias."],
 ];
-
-const gerarGrade = (i) =>
-  Array.from({ length: 5 }, (_, r) => Array.from({ length: 5 }, (_, c) => DISCIPLINAS[(r * 2 + c + i) % 8]));
-const formatarData = (d) => d.split("-").reverse().join("/");
-const relativo = (ts) => {
-  const n = Math.floor((Date.now() - ts) / DIA);
-  return n <= 0 ? "Hoje" : n === 1 ? "Ontem" : `Há ${n} dias`;
-};
-const hora = (ts) => new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-const vivo = (x) => Date.now() - x.ts <= LIMITE_LOG;
 
 const TURMAS0 = [
   { n: "6º A", s: "6º ano", t: "Manhã", a: 32 },
   { n: "7º B", s: "7º ano", t: "Manhã", a: 30 },
   { n: "1º EM A", s: "1ª série EM", t: "Tarde", a: 35 },
 ];
-const SOLICITACOES0 = [
-  { id: 1, p: "Carlos Mendes", t: "6º A", d: "Ciências", dia: 1, a: 1, st: "Pendente" },
-  { id: 2, p: "Helena Prado", t: "7º B", d: "Inglês", dia: 3, a: 3, st: "Pendente" },
-  { id: 3, p: "Carlos Mendes", t: "1º EM A", d: "Matemática", dia: 4, a: 0, st: "Pendente" },
-  { id: 4, p: "Helena Prado", t: "6º A", d: "Artes", dia: 0, a: 4, st: "Aprovada" },
-  { id: 5, p: "Carlos Mendes", t: "7º B", d: "História", dia: 2, a: 2, st: "Recusada", mot: "Horário já ocupado por Geografia" },
-];
-const EVENTOS0 = [
-  { t: "Prova de Matemática", k: "Prova", d: "2026-10-27", m: "6º A" },
-  { t: "Reunião de pais", k: "Reunião", d: "2026-11-04", m: "Todas" },
-  { t: "Entrega do trabalho de Ciências", k: "Trabalho", d: "2026-11-09", m: "7º B" },
-  { t: "Fim do 4º bimestre", k: "Prazo", d: "2026-12-11", m: "Todas" },
-];
-const USUARIOS0 = [
-  { n: "Marta Lima", p: "Coordenação", on: true },
-  { n: "Carlos Mendes", p: "Professor", on: true },
-  { n: "Helena Prado", p: "Professor", on: true },
-  { n: "Ana Souza", p: "Aluno", on: true },
-  { n: "Rafael Teixeira", p: "Aluno restrito", on: true },
-];
-const agora = Date.now();
-const LOG0 = [
-  { id: 1, ts: agora - 3600e3, txt: "Aprovou a aula de Artes da turma 6º A" },
-  { id: 2, ts: agora - DIA * 2, txt: "Publicou a reunião de pais" },
-  { id: 3, ts: agora - DIA * 9, txt: "Criou a turma 1º EM A" },
-  { id: 4, ts: agora - DIA * 27, txt: "Cadastrou o usuário Rafael Teixeira" },
-  { id: 5, ts: agora - DIA * 41, txt: "Criou o ano letivo 2026" }, // mais de 30 dias: é descartado
-];
 
-/* ---------- contexto compartilhado ---------- */
+const gerarGrade = (i) =>
+  Array.from({ length: 5 }, (_, r) =>
+    Array.from({ length: 5 }, (_, c) => DISCIPLINAS[(r * 2 + c + i) % 8])
+  );
+
+const formatarData = (d) => (d ? String(d).slice(0, 10).split("-").reverse().join("/") : "");
+const relativo = (ts) => {
+  const n = Math.floor((Date.now() - ts) / DIA);
+  return n <= 0 ? "Hoje" : n === 1 ? "Ontem" : `Há ${n} dias`;
+};
+const hora = (ts) =>
+  new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+const vivo = (x) => Date.now() - x.ts <= LIMITE_LOG;
+
+/* =========================================================
+   CONVERSÃO API <-> UI
+========================================================= */
+
+const reqFromApi = (r) => ({
+  id: r.id,
+  p: r.professor || r.nome || "Professor",
+  t: r.turma || "6º A",
+  d: r.disciplina || r.subtipo || r.tipo || "Aula",
+  dia: Math.max(0, Number(r.diaSemana ?? 1) - 1),
+  a: Math.max(0, Number(r.ordem ?? r.aula ?? 1) - 1),
+  st:
+    r.status === "PENDENTE" ? "Pendente"
+    : r.status === "APROVADA" ? "Aprovada"
+    : r.status === "RECUSADA" ? "Recusada"
+    : "Pendente",
+  mot: r.motivoRecusa || r.motivo || "",
+});
+
+const evFromApi = (e) => ({
+  t: e.nome || e.titulo || "Evento",
+  k: e.tipo || e.subtipo || "Evento",
+  d: String(e.data || "").slice(0, 10),
+  m: e.turma || "Todas",
+});
+
+const trocaFromApi = (t) => ({
+  id: t.id,
+  solicitante: t.professorSolicitante,
+  destino: t.professorDestino,
+  turma: t.turma,
+  disciplina: t.disciplina,
+  diaOrigem: t.diaOrigem,
+  aulaOrigem: t.aulaOrigem,
+  diaDestino: t.diaDestino,
+  aulaDestino: t.aulaDestino,
+  motivo: t.motivo || "",
+  status: t.status,
+});
+
+function gradeFromApi(aulas, turma) {
+  const grid = Array.from({ length: 5 }, () => Array(5).fill("Livre"));
+  aulas
+    .filter((a) => !turma || a.turma === turma)
+    .forEach((a) => {
+      const r = Number(a.ordem) - 1;
+      const c = Number(a.diaSemana) - 1;
+      if (r >= 0 && r < 5 && c >= 0 && c < 5) grid[r][c] = a.disciplina;
+    });
+  return grid;
+}
+
+/* =========================================================
+   CONTEXTO
+========================================================= */
+
 const AppContext = createContext(null);
 const useApp = () => useContext(AppContext);
 
 function Campo({ label, children }) {
-  return (
-    <label>
-      {label}
-      {children}
-    </label>
-  );
+  return <label>{label}{children}</label>;
 }
 
 function AvisoAnoEncerrado() {
   const { ro } = useApp();
-  return ro ? <div className="notice">Este ano letivo está encerrado: só é possível consultar.</div> : null;
+  return ro ? (
+    <div className="notice">Este ano letivo está encerrado: só é possível consultar.</div>
+  ) : null;
 }
 
-/* ---------- telas ---------- */
+/* =========================================================
+   TELAS
+========================================================= */
+
 function Inicio() {
-  const { reqs, eventos, log, go } = useApp();
+  const { reqs, trocas, eventos, log, go } = useApp();
   const pendentes = reqs.filter((r) => r.st === "Pendente").length;
+  const pendentesTroca = trocas.filter((t) => t.status === "PENDENTE").length;
   const hoje = new Date().toISOString().slice(0, 10);
-  const proximos = eventos.filter((x) => x.d >= hoje).sort((a, b) => a.d.localeCompare(b.d)).slice(0, 3);
+
+  const proximos = eventos
+    .filter((x) => x.d >= hoje)
+    .sort((a, b) => a.d.localeCompare(b.d))
+    .slice(0, 3);
+
   const recentes = log.filter(vivo).slice(0, 3);
 
   return (
@@ -101,9 +160,25 @@ function Inicio() {
       <div className="card">
         <div className="meta">Aguardando sua aprovação</div>
         <div className="stat">{pendentes}</div>
-        <p className="meta">{pendentes ? "Professores esperam resposta para publicar as aulas." : "Tudo em dia."}</p>
-        <button className="btn" onClick={() => go("apr")}>{pendentes ? "Revisar agora" : "Ver histórico"}</button>
+        <p className="meta">
+          {pendentes ? "Professores esperam resposta para publicar as aulas." : "Tudo em dia."}
+        </p>
+        <button className="btn" onClick={() => go("apr")}>
+          {pendentes ? "Revisar agora" : "Ver histórico"}
+        </button>
       </div>
+
+      <div className="card">
+        <div className="meta">Trocas pendentes</div>
+        <div className="stat">{pendentesTroca}</div>
+        <p className="meta">
+          {pendentesTroca ? "Há trocas aguardando análise." : "Nenhuma troca pendente."}
+        </p>
+        <button className="btn sec" onClick={() => go("troc")}>
+          Ver trocas
+        </button>
+      </div>
+
       <div className="card">
         <h2>Próximos eventos</h2>
         {proximos.length ? (
@@ -118,6 +193,7 @@ function Inicio() {
         )}
         <button className="btn sec" onClick={() => go("ev")}>Publicar evento</button>
       </div>
+
       <div className="card">
         <h2>Atividade recente</h2>
         <ul className="log">
@@ -135,35 +211,64 @@ function Aprovacoes() {
   const { reqs, setReqs, H, setH, ro, act, say } = useApp();
   const [filtro, setFiltro] = useState("Pendente");
   const [motivos, setMotivos] = useState({});
-  const pendentes = reqs.filter((r) => r.st === "Pendente").length;
-  const lista = reqs.filter((r) => (filtro === "Pendente" ? r.st === "Pendente" : r.st !== "Pendente"));
+  const [erro, setErro] = useState("");
 
-  const aprovar = (r) => {
-    setH((h) => ({
-      ...h,
-      [r.t]: h[r.t].map((linha, i) => (i === r.a ? linha.map((c, j) => (j === r.dia ? r.d : c)) : linha)),
-    }));
-    setReqs((rs) => rs.map((x) => (x.id === r.id ? { ...x, st: "Aprovada" } : x)));
-    act(`Aprovou a aula de ${r.d} da turma ${r.t}`);
-    say(`Aula publicada. ${r.p} foi avisado(a) por e-mail.`);
+  const pendentes = reqs.filter((r) => r.st === "Pendente").length;
+  const lista = reqs.filter((r) =>
+    filtro === "Pendente" ? r.st === "Pendente" : r.st !== "Pendente"
+  );
+
+  const aprovar = async (r) => {
+    try {
+      setErro("");
+      await aprovarSolicitacao(r.id);
+      setH((h) => ({
+        ...h,
+        [r.t]: (h[r.t] || gerarGrade(0)).map((linha, i) =>
+          i === r.a ? linha.map((c, j) => (j === r.dia ? r.d : c)) : linha
+        ),
+      }));
+      setReqs((rs) => rs.map((x) => (x.id === r.id ? { ...x, st: "Aprovada" } : x)));
+      act(`Aprovou a aula de ${r.d} da turma ${r.t}`);
+      say(`Aula publicada. ${r.p} foi avisado(a).`);
+    } catch (e) {
+      setErro(e.message);
+    }
   };
-  const recusar = (r) => {
-    const mot = (motivos[r.id] || "").trim() || "Sem motivo informado";
-    setReqs((rs) => rs.map((x) => (x.id === r.id ? { ...x, st: "Recusada", mot } : x)));
-    act(`Recusou a aula de ${r.d} da turma ${r.t}`);
-    say(`Solicitação recusada. ${r.p} foi avisado(a).`);
+
+  const recusar = async (r) => {
+    try {
+      setErro("");
+      await recusarSolicitacao(r.id);
+      const mot = (motivos[r.id] || "").trim() || "Sem motivo informado";
+      setReqs((rs) => rs.map((x) => (x.id === r.id ? { ...x, st: "Recusada", mot } : x)));
+      act(`Recusou a aula de ${r.d} da turma ${r.t}`);
+      say(`Solicitação recusada. ${r.p} foi avisado(a).`);
+    } catch (e) {
+      setErro(e.message);
+    }
   };
 
   return (
     <>
       <AvisoAnoEncerrado />
+      {erro && <div className="card"><p className="err">{erro}</p></div>}
+
       <div className="tabs">
-        <button className={filtro === "Pendente" ? "on" : ""} onClick={() => setFiltro("Pendente")}>Pendentes ({pendentes})</button>
-        <button className={filtro === "Pendente" ? "" : "on"} onClick={() => setFiltro("Histórico")}>Histórico</button>
+        <button className={filtro === "Pendente" ? "on" : ""} onClick={() => setFiltro("Pendente")}>
+          Pendentes ({pendentes})
+        </button>
+        <button className={filtro === "Pendente" ? "" : "on"} onClick={() => setFiltro("Histórico")}>
+          Histórico
+        </button>
       </div>
+
       {lista.length === 0 && (
-        <div className="card empty">{filtro === "Pendente" ? "Nenhuma solicitação pendente. Bom trabalho!" : "Ainda não há histórico."}</div>
+        <div className="card empty">
+          {filtro === "Pendente" ? "Nenhuma solicitação pendente. Bom trabalho!" : "Ainda não há histórico."}
+        </div>
       )}
+
       {lista.map((r) => {
         const atual = H[r.t]?.[r.a]?.[r.dia];
         const conflito = atual && atual !== "Livre" && atual !== r.d;
@@ -173,13 +278,20 @@ function Aprovacoes() {
               <div>
                 <b>{r.d} · {r.t}</b>
                 <div className="meta">Pedido por {r.p} · {DIAS[r.dia]}, {r.a + 1}ª aula</div>
-                {r.st === "Pendente" && conflito && <div className="warn">Vai substituir {atual} neste horário</div>}
+                {r.st === "Pendente" && conflito && (
+                  <div className="warn">Vai substituir {atual} neste horário</div>
+                )}
                 {r.mot && <div className="meta">Motivo: {r.mot}</div>}
               </div>
+
               {r.st === "Pendente" ? (
                 <div className="row">
                   <Campo label="Motivo da recusa (opcional)">
-                    <input size="22" value={motivos[r.id] || ""} onChange={(e) => setMotivos({ ...motivos, [r.id]: e.target.value })} />
+                    <input
+                      size="22"
+                      value={motivos[r.id] || ""}
+                      onChange={(e) => setMotivos({ ...motivos, [r.id]: e.target.value })}
+                    />
                   </Campo>
                   <button className="btn sec" disabled={ro} onClick={() => recusar(r)}>Recusar</button>
                   <button className="btn" disabled={ro} onClick={() => aprovar(r)}>Aprovar</button>
@@ -195,19 +307,155 @@ function Aprovacoes() {
   );
 }
 
-function Horarios() {
-  const { turmas, selT, setSelT, H, setH, ro, act, say } = useApp();
-  const grade = H[selT] || gerarGrade(0);
+function TrocasPendentes() {
+  const { trocas, setTrocas, ro, act, say } = useApp();
+  const [filtro, setFiltro] = useState("PENDENTE");
+  const [motivos, setMotivos] = useState({});
+  const [erro, setErro] = useState("");
 
-  const mudarCelula = (linha, coluna, valor) =>
-    setH((h) => ({
-      ...h,
-      [selT]: h[selT].map((l, i) => (i === linha ? l.map((c, j) => (j === coluna ? valor : c)) : l)),
-    }));
+  const lista = trocas.filter((t) =>
+    filtro === "PENDENTE" ? t.status === "PENDENTE" : t.status !== "PENDENTE"
+  );
+
+  const aprovar = async (t) => {
+    try {
+      setErro("");
+      await aprovarTroca(t.id);
+      setTrocas((arr) => arr.map((x) => (x.id === t.id ? { ...x, status: "APROVADA" } : x)));
+      act(`Aprovou a troca #${t.id} (${t.solicitante} → ${t.destino})`);
+      say("Troca aprovada.");
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
+
+  const recusar = async (t) => {
+    try {
+      setErro("");
+      await recusarTroca(t.id, motivos[t.id] || "");
+      setTrocas((arr) =>
+        arr.map((x) =>
+          x.id === t.id
+            ? { ...x, status: "RECUSADA", motivo: motivos[t.id] || x.motivo }
+            : x
+        )
+      );
+      act(`Recusou a troca #${t.id}`);
+      say("Troca recusada.");
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
 
   return (
     <>
       <AvisoAnoEncerrado />
+      {erro && <div className="card"><p className="err">{erro}</p></div>}
+
+      <div className="tabs">
+        <button className={filtro === "PENDENTE" ? "on" : ""} onClick={() => setFiltro("PENDENTE")}>
+          Pendentes ({trocas.filter((t) => t.status === "PENDENTE").length})
+        </button>
+        <button className={filtro === "PENDENTE" ? "" : "on"} onClick={() => setFiltro("HISTORICO")}>
+          Histórico
+        </button>
+      </div>
+
+      {lista.length === 0 && (
+        <div className="card empty">
+          {filtro === "PENDENTE" ? "Nenhuma troca pendente." : "Ainda não há histórico de trocas."}
+        </div>
+      )}
+
+      {lista.map((t) => (
+        <div className="card" key={t.id}>
+          <div className="req">
+            <div>
+              <b>{t.solicitante} → {t.destino}</b>
+              <div className="meta">
+                {t.disciplina} · {t.turma} · {DIAS[t.diaOrigem]} {t.aulaOrigem + 1}ª aula
+                {" → "}
+                {DIAS[t.diaDestino]} {t.aulaDestino + 1}ª aula
+              </div>
+              {t.motivo && <div className="meta">Motivo: {t.motivo}</div>}
+              {t.status === "RECUSADA" && t.motivo && (
+                <div className="meta">Recusa: {t.motivo}</div>
+              )}
+            </div>
+
+            {t.status === "PENDENTE" ? (
+              <div className="row">
+                <Campo label="Motivo da recusa (opcional)">
+                  <input
+                    size="22"
+                    value={motivos[t.id] || ""}
+                    onChange={(e) => setMotivos({ ...motivos, [t.id]: e.target.value })}
+                  />
+                </Campo>
+                <button className="btn sec" disabled={ro} onClick={() => recusar(t)}>Recusar</button>
+                <button className="btn" disabled={ro} onClick={() => aprovar(t)}>Aprovar</button>
+              </div>
+            ) : (
+              <span className={`tag ${t.status === "APROVADA" ? "ok" : "bad"}`}>
+                {t.status}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function Horarios() {
+  const { turmas, selT, setSelT, H, setH, ro, act, say } = useApp();
+  const grade = H[selT] || gerarGrade(0);
+  const [erro, setErro] = useState("");
+  const [publicando, setPublicando] = useState(false);
+
+  const mudarCelula = (linha, coluna, valor) =>
+    setH((h) => ({
+      ...h,
+      [selT]: (h[selT] || gerarGrade(0)).map((l, i) =>
+        i === linha ? l.map((c, j) => (j === coluna ? valor : c)) : l
+      ),
+    }));
+
+  const publicar = async () => {
+    try {
+      setErro("");
+      setPublicando(true);
+
+      for (let r = 0; r < grade.length; r++) {
+        for (let c = 0; c < grade[r].length; c++) {
+          const disciplina = grade[r][c];
+          if (disciplina === "Livre") continue;
+
+          await cadastrarHorario({
+            turma: selT,
+            turno: "Manhã",
+            diaSemana: c + 1,
+            ordem: r + 1,
+            horario: HORARIOS_BASE[r] || "07:30",
+            disciplina,
+          });
+        }
+      }
+
+      act(`Publicou o horário da turma ${selT}`);
+      say(`Horário da ${selT} publicado.`);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setPublicando(false);
+    }
+  };
+
+  return (
+    <>
+      <AvisoAnoEncerrado />
+      {erro && <div className="card"><p className="err">{erro}</p></div>}
+
       <div className="card">
         <div className="row bar">
           <Campo label="Turma">
@@ -215,10 +463,11 @@ function Horarios() {
               {turmas.map((t) => <option key={t.n}>{t.n}</option>)}
             </select>
           </Campo>
-          <button className="btn sec" onClick={() => { act(`Publicou o horário da turma ${selT}`); say(`Horário da ${selT} publicado. Notificações enviadas.`); }}>
-            Publicar alterações
+          <button className="btn sec" disabled={publicando} onClick={publicar}>
+            {publicando ? "Publicando..." : "Publicar alterações"}
           </button>
         </div>
+
         <div className="scroll">
           <table>
             <thead>
@@ -252,14 +501,16 @@ function Eventos() {
   const [erro, setErro] = useState("");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
+  // POST /eventos ainda não existe no backend. Mantemos local.
   const publicar = () => {
     if (!f.titulo.trim() || !f.data) return setErro("Preencha o título e a data.");
     setEventos((x) => [...x, { t: f.titulo.trim(), k: f.tipo, d: f.data, m: f.turma }]);
     act(`Publicou: ${f.titulo.trim()}`);
     setF(vazio);
     setErro("");
-    say("Publicado. Notificação e e-mail enviados.");
+    say("Publicado (ainda local — backend sem POST /eventos).");
   };
+
   const remover = (ev) =>
     ask(`Remover “${ev.t}”?`, () => {
       setEventos((x) => x.filter((y) => y !== ev));
@@ -270,6 +521,7 @@ function Eventos() {
   return (
     <>
       <AvisoAnoEncerrado />
+
       <div className="card scroll">
         <table>
           <thead>
@@ -289,6 +541,7 @@ function Eventos() {
           </tbody>
         </table>
       </div>
+
       <div className="card">
         <h2>Novo evento</h2>
         <div className="row">
@@ -320,7 +573,7 @@ function AnosETurmas() {
   const [t, setT] = useState({ n: "", s: "", turno: "Manhã" });
   const [erroTurma, setErroTurma] = useState("");
 
-  const ultimo = Math.max(...anos.map((a) => +a.n));
+  const ultimo = Math.max(...anos.map((a) => +a.n), 0);
   const sugestoes = [1, 2, 3, 4].map((i) => String(ultimo + i));
 
   const criarAno = () => {
@@ -333,13 +586,18 @@ function AnosETurmas() {
     setErroAno("");
     say(`Ano letivo ${n} criado.`);
   };
+
   const ativar = (n) =>
     ask(`Definir ${n} como ano ativo? O ano ativo atual passa a ficar encerrado.`, () => {
-      setAnos((a) => a.map((x) => ({ ...x, st: x.n === n ? "Ativo" : x.st === "Ativo" ? "Encerrado" : x.st })));
+      setAnos((a) => a.map((x) => ({
+        ...x,
+        st: x.n === n ? "Ativo" : x.st === "Ativo" ? "Encerrado" : x.st,
+      })));
       setCur(n);
       act(`Definiu ${n} como ano ativo`);
       say(`Ano ${n} agora é o ano ativo.`);
     });
+
   const criarTurma = () => {
     const n = t.n.trim(), s = t.s.trim();
     if (!n || !s) return setErroTurma("Preencha o nome da turma e a série.");
@@ -351,10 +609,14 @@ function AnosETurmas() {
     setErroTurma("");
     say(`Turma ${n} adicionada.`);
   };
+
   const removerTurma = (turma) =>
     ask(`Remover a turma ${turma.n}? O horário dela também será apagado.`, () => {
       setTurmas((x) => x.filter((y) => y.n !== turma.n));
-      setH((h) => { const { [turma.n]: _, ...resto } = h; return resto; });
+      setH((h) => {
+        const { [turma.n]: _, ...resto } = h;
+        return resto;
+      });
       if (selT === turma.n) setSelT(turmas.find((y) => y.n !== turma.n)?.n || "");
       act(`Removeu a turma ${turma.n}`);
       say("Turma removida.");
@@ -392,6 +654,7 @@ function AnosETurmas() {
       </div>
 
       <AvisoAnoEncerrado />
+
       <div className="card scroll">
         <h2>Turmas, séries e turnos</h2>
         <table>
@@ -405,6 +668,7 @@ function AnosETurmas() {
             ))}
           </tbody>
         </table>
+
         <div className="row topo">
           <Campo label="Turma"><input size="8" placeholder="8º A" disabled={ro} value={t.n} onChange={(e) => setT({ ...t, n: e.target.value })} /></Campo>
           <Campo label="Série"><input size="12" placeholder="8º ano" disabled={ro} value={t.s} onChange={(e) => setT({ ...t, s: e.target.value })} /></Campo>
@@ -426,19 +690,26 @@ function Usuarios() {
   const [f, setF] = useState({ nome: "", perfil: "Aluno" });
   const [erro, setErro] = useState("");
 
-  const criar = () => {
+  const criar = async () => {
     if (!f.nome.trim()) return setErro("Informe o nome.");
-    setUsers((u) => [...u, { n: f.nome.trim(), p: f.perfil, on: true }]);
-    act(`Cadastrou o usuário ${f.nome.trim()}`);
-    setF({ nome: "", perfil: "Aluno" });
-    setErro("");
-    say("Usuário criado.");
+    try {
+      setErro("");
+      await cadastrarUsuario({ nome: f.nome.trim(), perfil: f.perfil });
+      setUsers((u) => [...u, { n: f.nome.trim(), p: f.perfil, on: true }]);
+      act(`Cadastrou o usuário ${f.nome.trim()}`);
+      setF({ nome: "", perfil: "Aluno" });
+      say("Usuário criado.");
+    } catch (e) {
+      setErro(e.message);
+    }
   };
+
   const mudarPerfil = (i, p) => {
     setUsers((u) => u.map((x, j) => (j === i ? { ...x, p } : x)));
     act(`Mudou o perfil de ${users[i].n} para ${p}`);
     say(`Perfil de ${users[i].n} alterado.`);
   };
+
   const alternarAcesso = (i) => {
     const u = users[i];
     setUsers((l) => l.map((x, j) => (j === i ? { ...x, on: !x.on } : x)));
@@ -464,6 +735,7 @@ function Usuarios() {
             ))}
           </tbody>
         </table>
+
         <div className="row topo">
           <Campo label="Nome"><input size="22" value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} /></Campo>
           <Campo label="Perfil">
@@ -503,7 +775,9 @@ function Registro() {
 
   return (
     <>
-      <div className="notice">Os registros ficam guardados por 30 dias. Depois disso, são apagados automaticamente.</div>
+      <div className="notice">
+        Os registros ficam guardados por 30 dias. (Ainda não há persistência no backend — é local.)
+      </div>
       <div className="tabs">
         {[[1, "Hoje"], [7, "7 dias"], [30, "30 dias"]].map(([d, rotulo]) => (
           <button key={d} className={dias === d ? "on" : ""} onClick={() => setDias(d)}>{rotulo}</button>
@@ -515,7 +789,7 @@ function Registro() {
             {lista.map((x) => (
               <li key={x.id}>
                 <time>{relativo(x.ts)}<br />{hora(x.ts)}</time>
-                <span><b>Marta Lima</b> · {x.txt}</span>
+                <span><b>Coordenação</b> · {x.txt}</span>
               </li>
             ))}
           </ul>
@@ -527,36 +801,108 @@ function Registro() {
   );
 }
 
-/* ---------- aplicação ---------- */
-const COMPONENTES = { home: Inicio, apr: Aprovacoes, hor: Horarios, ev: Eventos, anos: AnosETurmas, usr: Usuarios, log: Registro };
+/* =========================================================
+   APLICAÇÃO
+========================================================= */
+
+const COMPONENTES = {
+  home: Inicio,
+  apr: Aprovacoes,
+  troc: TrocasPendentes,
+  hor: Horarios,
+  ev: Eventos,
+  anos: AnosETurmas,
+  usr: Usuarios,
+  log: Registro,
+};
 
 export default function CoordenacaoApp() {
   const [view, setView] = useState("home");
   const [cur, setCur] = useState("2026");
   const [selT, setSelT] = useState("6º A");
-  const [anos, setAnos] = useState([{ n: "2026", st: "Ativo" }, { n: "2025", st: "Encerrado" }]);
+  const [anos, setAnos] = useState([
+    { n: "2026", st: "Ativo" },
+    { n: "2025", st: "Encerrado" },
+  ]);
   const [turmas, setTurmas] = useState(TURMAS0);
-  const [H, setH] = useState(() => Object.fromEntries(TURMAS0.map((t, i) => [t.n, gerarGrade(i)])));
-  const [reqs, setReqs] = useState(SOLICITACOES0);
-  const [eventos, setEventos] = useState(EVENTOS0);
-  const [users, setUsers] = useState(USUARIOS0);
-  const [log, setLog] = useState(LOG0);
+  const [H, setH] = useState(() =>
+    Object.fromEntries(TURMAS0.map((t, i) => [t.n, gerarGrade(i)]))
+  );
+  const [reqs, setReqs] = useState([]);
+  const [trocas, setTrocas] = useState([]);
+  const [eventos, setEventos] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [log, setLog] = useState([]);
   const [toast, setToast] = useState("");
   const [modal, setModal] = useState(null);
+  const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => setLog((l) => l.filter(vivo)), []); // descarta registros com mais de 30 dias
+  // Carrega dados da API
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const [solicitacoes, listaTrocas, listaEventos, aulas, usuarios] = await Promise.all([
+          listarSolicitacoesPendentes().catch(() => []),
+          listarTrocasPendentes().catch(() => []),
+          listarEventos().catch(() => []),
+          listarHorarios().catch(() => []),
+          listarUsuarios().catch(() => []),
+        ]);
+
+        if (!ativo) return;
+
+        setReqs((solicitacoes || []).map(reqFromApi));
+        setTrocas((listaTrocas || []).map(trocaFromApi));
+        setEventos((listaEventos || []).map(evFromApi));
+        setUsers(
+          (usuarios || []).map((u) => ({
+            n: u.nome || u.name || "Usuário",
+            p: u.perfil || u.role || "Aluno",
+            on: true,
+          }))
+        );
+
+        if (Array.isArray(aulas) && aulas.length) {
+          const gradePorTurma = {};
+          TURMAS0.forEach((t) => {
+            gradePorTurma[t.n] = gradeFromApi(aulas, t.n);
+          });
+          setH(gradePorTurma);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar coordenação:", e);
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
+  useEffect(() => setLog((l) => l.filter(vivo)), []);
+
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(""), 3000);
     return () => clearTimeout(id);
   }, [toast]);
 
-  const act = (txt) => setLog((l) => [{ id: Math.random(), ts: Date.now(), txt }, ...l].filter(vivo));
+  const act = (txt) =>
+    setLog((l) => [{ id: Math.random(), ts: Date.now(), txt }, ...l].filter(vivo));
   const ask = (msg, fn) => setModal({ msg, fn });
   const ro = anos.find((a) => a.n === cur)?.st === "Encerrado";
   const pendentes = reqs.filter((r) => r.st === "Pendente").length;
 
-  const ctx = { cur, setCur, selT, setSelT, anos, setAnos, turmas, setTurmas, H, setH, reqs, setReqs, eventos, setEventos, users, setUsers, log, ro, act, say: setToast, ask, go: setView };
+  const ctx = useMemo(
+    () => ({
+      cur, setCur, selT, setSelT, anos, setAnos, turmas, setTurmas,
+      H, setH, reqs, setReqs, trocas, setTrocas, eventos, setEventos,
+      users, setUsers, log, ro, act, say: setToast, ask, go: setView,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cur, selT, anos, turmas, H, reqs, trocas, eventos, users, log, ro]
+  );
+
   const [, titulo, ajuda] = TELAS.find((t) => t[0] === view);
   const Tela = COMPONENTES[view];
 
@@ -571,6 +917,9 @@ export default function CoordenacaoApp() {
               <button key={id} className={id === view ? "on" : ""} onClick={() => setView(id)}>
                 <span>{nome}</span>
                 {id === "apr" && pendentes > 0 && <span className="badge">{pendentes}</span>}
+                {id === "troc" && trocas.filter((t) => t.status === "PENDENTE").length > 0 && (
+                  <span className="badge">{trocas.filter((t) => t.status === "PENDENTE").length}</span>
+                )}
               </button>
             ))}
           </nav>
@@ -589,7 +938,12 @@ export default function CoordenacaoApp() {
               </select>
             </label>
           </header>
-          <Tela />
+
+          {carregando ? (
+            <div className="card"><p className="meta">Carregando dados da coordenação...</p></div>
+          ) : (
+            <Tela />
+          )}
         </main>
 
         {modal && (
@@ -603,10 +957,9 @@ export default function CoordenacaoApp() {
             </div>
           </div>
         )}
+
         <div className={`toast ${toast ? "on" : ""}`} role="status" aria-live="polite">{toast}</div>
       </div>
     </AppContext.Provider>
   );
 }
-
-

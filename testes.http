@@ -1,29 +1,186 @@
-### Listar usuários
-GET http://localhost:3000/listar
+### ============================================
+### VARIÁVEIS GLOBAIS
+### ============================================
+@baseUrl = http://localhost:3000
+@turma = 6º A
+@turno = Manhã
+@admin = true
 
+### ============================================
+### 1) LISTAR GRADE COMPLETA
+### GET /horarios
+### ============================================
 
+GET {{baseUrl}}/horarios
+Accept: application/json
 
-### Cadastrar usuário
-POST http://localhost:3000/cadastrar
+### ============================================
+### 2) LISTAR GRADE FILTRANDO POR TURMA E TURNO
+### GET /horarios?turma=6º A&turno=Manhã
+### (URL encode aplicado automaticamente pelo REST Client)
+### ============================================
+
+GET {{baseUrl}}/horarios?turma={{turma}}&turno={{turno}}
+Accept: application/json
+
+### ============================================
+### 3) AULAS DE HOJE
+### GET /horarios/hoje
+### ============================================
+
+GET {{baseUrl}}/horarios/hoje
+Accept: application/json
+
+### ============================================
+### 4) AULAS DE HOJE FILTRANDO POR TURMA
+### ============================================
+
+GET {{baseUrl}}/horarios/hoje?turma={{turma}}&turno={{turno}}
+Accept: application/json
+
+### ============================================
+### 5) BUSCAR UMA AULA POR ID
+### GET /horarios/:id
+### ============================================
+
+GET {{baseUrl}}/horarios/1
+Accept: application/json
+
+### ============================================
+### 6) CADASTRAR AULA (ADMIN)
+### POST /admin/horarios
+### ============================================
+
+POST {{baseUrl}}/admin/horarios
 Content-Type: application/json
+x-admin: {{admin}}
 
 {
-    "nome": "Maria Silva",
-    "email": "maria@email.com",
-    "senha": "123456",
-    "tipo": "professor"
+    "turma": "6º A",
+    "turno": "Manhã",
+    "diaSemana": 1,
+    "ordem": 1,
+    "horario": "07:30",
+    "disciplina": "Português",
+    "professor": "Prof. Ana",
+    "sala": "Sala 12"
 }
 
-### Buscar usuário
-GET http://localhost:3000/usuario/buscar/1
+### ============================================
+### 7) CADASTRAR OUTRA AULA (mesmo dia, 2ª aula)
+### ============================================
 
-### Editar usuário
-PUT http://localhost:3000/users/editar/1
+POST {{baseUrl}}/admin/horarios
 Content-Type: application/json
+x-admin: {{admin}}
 
 {
-    "nome": "João Atualizado"
+    "turma": "6º A",
+    "turno": "Manhã",
+    "diaSemana": 1,
+    "ordem": 2,
+    "horario": "08:20",
+    "disciplina": "Matemática",
+    "professor": "Prof. Bruno",
+    "sala": "Sala 12"
 }
 
-### Excluir usuário
-DELETE http://localhost:3000/usuario/delete/1
+### ============================================
+### 8) CADASTRAR AULA SEM PROFESSOR/SALA (opcionais)
+### ============================================
+
+POST {{baseUrl}}/admin/horarios
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "diaSemana": 3,
+    "ordem": 3,
+    "horario": "09:10",
+    "disciplina": "Ciências"
+}
+
+### ============================================
+### 9) EDITAR AULA (ADMIN)
+### PUT /admin/horarios/:id
+### ============================================
+
+PUT {{baseUrl}}/admin/horarios/1
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "disciplina": "Português (revisão)",
+    "professor": "Prof. Ana Maria",
+    "sala": "Sala 15"
+}
+
+### ============================================
+### 10) REMOVER AULA (ADMIN)
+### DELETE /admin/horarios/:id
+### ============================================
+
+DELETE {{baseUrl}}/admin/horarios/1
+x-admin: {{admin}}
+Accept: application/json
+
+### ============================================
+### 11) ERROS ESPERADOS — validação
+### ============================================
+
+### 11.1) POST sem campos obrigatórios → 400
+POST {{baseUrl}}/admin/horarios
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "turma": "6º A"
+}
+
+### 11.2) POST com diaSemana inválido (0) → 400
+POST {{baseUrl}}/admin/horarios
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "diaSemana": 0,
+    "ordem": 1,
+    "horario": "07:30",
+    "disciplina": "Português"
+}
+
+### 11.3) POST com diaSemana inválido (6) → 400
+POST {{baseUrl}}/admin/horarios
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "diaSemana": 6,
+    "ordem": 1,
+    "horario": "07:30",
+    "disciplina": "Português"
+}
+
+### 11.4) GET de ID inexistente → 404
+GET {{baseUrl}}/horarios/99999
+Accept: application/json
+
+### 11.5) PUT de ID inexistente → 404
+PUT {{baseUrl}}/admin/horarios/99999
+Content-Type: application/json
+x-admin: {{admin}}
+
+{
+    "disciplina": "Teste"
+}
+
+### 11.6) DELETE de ID inexistente → 404
+DELETE {{baseUrl}}/admin/horarios/99999
+x-admin: {{admin}}
+
+### ============================================
+### 12) EVENTOS (para comparar o padrão)
+### ============================================
+
+GET {{baseUrl}}/eventos
+Accept: application/json
